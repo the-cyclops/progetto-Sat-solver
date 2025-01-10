@@ -85,7 +85,9 @@ public class Node {
     }
 
     public Set<Integer> getccpar() {
-        return ccpar;
+        //return a copy of the set in order to merge correctly in dagsolver
+        Set<Integer> to_return = new HashSet<>(ccpar);
+        return to_return;
     }
 
     public void setForbidden_set(int forbidden) {

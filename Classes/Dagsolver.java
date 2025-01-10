@@ -99,10 +99,13 @@ public class Dagsolver {
     }
 
     public void Merge(int id_1, int id_2) {
+        //System.out.println("Trying to merge " + id_1 + " and " + id_2);
         if (FindfromId(id_1) != FindfromId(id_2)) {
             Set<Integer> ccpar_1 = CcparfromId(id_1);
             Set<Integer> ccpar_2 = CcparfromId(id_2);
             Union(id_1, id_2);
+            //union modify the ccpar of id_1 and id_2 
+            //our CcparfromId is a copy of the ccpar of the node so they are the original
             for (int t1 : ccpar_1) {
                 for(int t2 : ccpar_2) {
                     if (FindfromId(t1) != FindfromId(t2) && Congruent(t1,t2)) {
