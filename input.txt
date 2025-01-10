@@ -1,1 +1,1 @@
-f(f(f(a))) = a AND f(f(f(f(f(a))))) = a AND f(a) != a
+f(a) != f(a)

@@ -17,14 +17,67 @@ public class FormulaParser {
     //this method handles the input formula, branches the store and returns a set of formulas with no store
     //we then will call our solvers for each of these formula in the main, 
     //we need to provide and empty set of String in input as to_return
-    public static Set<String> FormulaArraysToSetnoStore(String formula, Set<String> to_return) {
+    //select(store(array,i,v),j) = a AND f(f(a,b),b) = a --> {f(f(a,b),b) AND v = a AND i=j,
+    //                                                       f(f(a,b),b) AND select(array,j)=v AND i!=j}
+    public static Set<String> FormulaArraysToSetnoStore(String formula) {
+        //since we are in T-array without extensionality, every occurence of store must be inside of a select
+        //select(store(a,i,v),j)
+        Set<String> to_return = new HashSet<>();
         if (formula.contains("store")) {
+            String F1 = new String(formula);
+            String F2 = new String(formula);
             String[] split = formula.split("AND");
             for(int i=0; i< split.length; i++) {
+                split[i] = split[i].replaceAll(" ", "");
+            }
+            F1 = F1.replaceAll(" ", "");
+            F2 = F2.replaceAll(" ", "");
+            for(int i=0; i< split.length; i++) {
+                String to_be_replaced = new String();
                 if (split[i].contains("store")) {
-                    int index = split[i].indexOf("store");
+                    //s is select(store(array,i,v),j)=a
+                    String s = split[i];
+                    String[] no_equalities = s.split("=|!=");
+                    for (String term : no_equalities){
+                        if (term.contains("store")) {
+                            to_be_replaced = term;
+                            int index_v = term.length()-1;
+                            int index_j = 0;
+                            int index_i = 0;
+                            int index_parentesis_afterv = 0;
+                            while(term.charAt(index_v) != ',') {
+                                index_v--;
+                            }
+                            index_j = index_v + 1;
+                            //index_v is now the index of the comma after v),
+                            index_v--;
+                            index_parentesis_afterv = index_v;
+                            while(term.charAt(index_v) != ',') {
+                                index_v--;
+                            }
+                            int index_secondcomma = index_v;
+                            index_v++;
+                            int index_firstcomma = index_secondcomma - 1;
+                            while(term.charAt(index_firstcomma) != ',') {
+                                index_firstcomma--;
+                            }
+                            index_i = index_firstcomma + 1;
+                            String first_index = term.substring(index_i, index_secondcomma);
+                            String second_index = term.substring(index_j, term.length()-1);
+                            int index_first_parentesis = term.indexOf("store(") + 5;
+                            String array_forf2 = term.substring(index_first_parentesis, index_firstcomma);
 
-                    //String term_for_F1 = 
+                            String v = term.substring(index_v, index_parentesis_afterv);
+                            F1 = F1.replace(to_be_replaced, v);
+                            F1 += " AND " + first_index + "=" + second_index;
+                            to_return.addAll(FormulaArraysToSetnoStore(F1));
+                            String select_forf2 = "select" + array_forf2 + "," + second_index + ")";
+                            F2 = F2.replace(to_be_replaced, select_forf2);
+                            F2 += " AND " + first_index + "!=" + second_index;
+                            to_return.addAll(FormulaArraysToSetnoStore(F2));
+                        }
+
+                    }
                 }
             }
             
@@ -34,11 +87,12 @@ public class FormulaParser {
             return to_return;
         }
 
-        return null;    
+        return to_return;    
     }
     
     //we use AND for logical operators
     //this works only if formula in input is conjunction of literals, we need to have done DNF before and take one of disjuncts
+    //this method requires no occurence of store (handled with FormulaArraysToSetnoStore)
     //f(a,b) = a AND f(f(a,b),b) = a -> F = {f(a,b)=a, f(f(a,b),b)=a}
     public static Set<String> FormulatoConjuncts(String formula){
         String[] split = formula.split("AND");
