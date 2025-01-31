@@ -13,7 +13,87 @@ import java.util.HashMap;
 
 
 public class FormulaParser {
+    // Reduction to dnf, the result will be the set of each cube
+    // we consider in inputm made with parenthesis for each connective: (R(a)) <-> ((a=b)AND(R(b)))
+    // A AND B OR C AND D -->  {A AND B,
+    //                          C AND D  }
+    public static Set<String> FormulatoDNF(String formula) {
+        Set<String> to_return = new HashSet<>();
+        //reduction to NNF
+        String formula_NNF = FormulatoNNF(formula);
+
+        return to_return;
+    }
     
+    // -> <->    R(a)<->R(b)    !(a=b)
+    public static String FormulatoNNF(String formula) {
+        formula = formula.replaceAll(" ", "");
+        while (formula.contains("<->")) {
+            int index_biconditional = formula.indexOf("<->");
+            int lvl_biconditional = 0;
+            //left to right, encoutering ( increase the lvl, deeper
+            for (int i =0 ; i<index_biconditional ; i++) {
+                if (formula.charAt(i) == '(') {
+                    lvl_biconditional++;
+                }
+                if (formula.charAt(i) == ')') {
+                    lvl_biconditional--;
+                }
+            }
+            // (R(a) <-> R(b)) -----> (R(a) -> R(b)) AND (R(b) -> R(a))
+            int index_open_parenthesis = 0;
+            int index_close_parenthesis = 0;
+            int curr_lvl = lvl_biconditional;
+
+            //right to left, encountering ( decrease the lvl, less deep
+            for (int i = index_biconditional; curr_lvl >= lvl_biconditional && i>=0 ; i--) {
+                if (formula.charAt(i) == '(') {
+                    curr_lvl--;
+                }
+                if (formula.charAt(i) == ')') {
+                    curr_lvl++;
+                }
+                index_open_parenthesis = i;
+            }
+            if(index_open_parenthesis>0 || curr_lvl< lvl_biconditional) {
+				index_open_parenthesis++;
+			}
+            curr_lvl = lvl_biconditional;
+            //left to right, encoutering ( increase the lvl, deeper
+            for (int i = index_biconditional+3; curr_lvl >= lvl_biconditional && i<formula.length(); i++) {
+                if (formula.charAt(i) == '(') {
+                    curr_lvl++;
+                }
+                if (formula.charAt(i) == ')') {
+                    curr_lvl--;
+                }
+                index_close_parenthesis = i;
+            }
+            String to_be_replaced = formula.substring(index_open_parenthesis, index_close_parenthesis);
+            String term_1 = formula.substring(index_open_parenthesis, index_biconditional);
+            String term_2 = formula.substring(index_biconditional+3, index_close_parenthesis);
+            //ensure we don't have extra ( 
+			int openCount = term_2.length() - term_2.replaceAll("\\(", "").length();
+			int closeCount = term_2.length() - term_2.replaceAll("\\)", "").length();
+			int many_to_delete = closeCount - openCount;
+			System.out.println("\n t2 before " + term_2);
+			System.out.println("\n to be replaced before " + to_be_replaced);
+			
+			if (many_to_delete>0) {
+			    term_2 = term_2.substring(0, term_2.length()-many_to_delete);
+			    to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
+			}
+            System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
+            String replace_with = "(" +term_1+"->" + term_2 + ")AND(" + term_2 + "->" + term_1 + ")";
+            System.out.println(replace_with);
+            formula = formula.replace(to_be_replaced, replace_with);
+            System.out.println(formula);
+            
+
+        }
+        return formula;
+    }
+
     //this method handles the input formula, branches the store and returns a set of formulas with no store
     //we then will call our solvers for each of these formula in the main, 
     //we need to provide and empty set of String in input as to_return
@@ -93,6 +173,7 @@ public class FormulaParser {
     //we use AND for logical operators
     //this works only if formula in input is conjunction of literals, we need to have done DNF before and take one of disjuncts
     //this method requires no occurence of store (handled with FormulaArraysToSetnoStore)
+    //this method requires no additional parenthesis outside for functions and relations
     //f(a,b) = a AND f(f(a,b),b) = a -> F = {f(a,b)=a, f(f(a,b),b)=a}
     public static Set<String> FormulatoConjuncts(String formula){
         String[] split = formula.split("AND");
@@ -122,7 +203,7 @@ public class FormulaParser {
             }
         }
 
-        //handling relation by considering them as function equal to TRUE    (R(t1,t2..,tn -> R(t1,t2..,tn)=TRUE)
+        //handling relation by considering them as function equal to TRUE    (R(t1,t2..,tn -> f_R(t1,t2..,tn)=TRUE)
         //we do this even for all R that have no equality in the formula (R -> R=TRUE)
         //here we handle the not (!) since it is only applcable to the relations
         for (String s : F) {
@@ -130,7 +211,8 @@ public class FormulaParser {
                 if (s.contains("!")) {
                     //System.out.println("found !");
                     int index = s.indexOf("!");
-                    String a = s.substring(index+1, s.length());
+                    String a = "f_";
+                    a += s.substring(index+1, s.length());
                     //System.out.println("a is " + a);
                     a+= "!=TRUE";
                     //System.out.println("a is " + a);
@@ -141,7 +223,8 @@ public class FormulaParser {
                 }
                 else {
                     //System.out.println("found R");
-                    String a = s + "=TRUE";
+                    String a = "f_";
+                    a += s + "=TRUE";
                     //System.out.println("a is " + a);
                     toRemove.add(s);
                     
@@ -247,6 +330,7 @@ public class FormulaParser {
                 //System.out.println("now: " +  now);
 
                 for (int c=0; c<now.length(); c++ ) {
+                    //if we find a (, we know there is a function / relation to handle
                     if (now.charAt(c) == '(' ) {
                         
                         int l = now.length()-1;
