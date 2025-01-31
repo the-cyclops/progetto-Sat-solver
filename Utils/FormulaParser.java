@@ -14,7 +14,8 @@ import java.util.HashMap;
 
 public class FormulaParser {
     // Reduction to dnf, the result will be the set of each cube
-    // we consider in inputm made with parenthesis for each connective: (R(a)) <-> ((a=b)AND(R(b)))
+    // we consider  input made with parenthesis for each connective: (R(a)) <-> ((a=b)AND(R(b)))
+    // even for negation: (!(A))<->(B)
     // A AND B OR C AND D -->  {A AND B,
     //                          C AND D  }
     public static Set<String> FormulatoDNF(String formula) {
@@ -28,6 +29,7 @@ public class FormulaParser {
     // -> <->    R(a)<->R(b)    !(a=b)
     public static String FormulatoNNF(String formula) {
         formula = formula.replaceAll(" ", "");
+        //handling <->
         while (formula.contains("<->")) {
             int index_biconditional = formula.indexOf("<->");
             int lvl_biconditional = 0;
@@ -69,6 +71,9 @@ public class FormulaParser {
                 }
                 index_close_parenthesis = i;
             }
+            if(index_close_parenthesis == formula.length()-1) {
+                index_close_parenthesis++;
+            }
             String to_be_replaced = formula.substring(index_open_parenthesis, index_close_parenthesis);
             String term_1 = formula.substring(index_open_parenthesis, index_biconditional);
             String term_2 = formula.substring(index_biconditional+3, index_close_parenthesis);
@@ -88,8 +93,72 @@ public class FormulaParser {
             System.out.println(replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
             System.out.println(formula);
-            
+        }
+        
+        //handling ->
+        while (formula.contains("->")) {
+            int index_implication = formula.indexOf("->");
+            int lvl_implication = 0;
+            //left to right, encoutering ( increase the lvl, deeper
+            for (int i =0 ; i<index_implication ; i++) {
+                if (formula.charAt(i) == '(') {
+                    lvl_implication++;
+                }
+                if (formula.charAt(i) == ')') {
+                    lvl_implication--;
+                }
+            }
+            // (R(a) <-> R(b)) -----> (R(a) -> R(b)) AND (R(b) -> R(a))
+            int index_open_parenthesis = 0;
+            int index_close_parenthesis = 0;
+            int curr_lvl = lvl_implication;
 
+            //right to left, encountering ( decrease the lvl, less deep
+            for (int i = index_implication; curr_lvl >= lvl_implication && i>=0 ; i--) {
+                if (formula.charAt(i) == '(') {
+                    curr_lvl--;
+                }
+                if (formula.charAt(i) == ')') {
+                    curr_lvl++;
+                }
+                index_open_parenthesis = i;
+            }
+            if(index_open_parenthesis>0 || curr_lvl< lvl_implication) {
+				index_open_parenthesis++;
+			}
+            curr_lvl = lvl_implication;
+            //left to right, encoutering ( increase the lvl, deeper
+            for (int i = index_implication+2; curr_lvl >= lvl_implication && i<formula.length(); i++) {
+                if (formula.charAt(i) == '(') {
+                    curr_lvl++;
+                }
+                if (formula.charAt(i) == ')') {
+                    curr_lvl--;
+                }
+                index_close_parenthesis = i;
+            }
+            if(index_close_parenthesis == formula.length()-1) {
+                index_close_parenthesis++;
+            }
+            String to_be_replaced = formula.substring(index_open_parenthesis, index_close_parenthesis);
+            String term_1 = formula.substring(index_open_parenthesis, index_implication);
+            String term_2 = formula.substring(index_implication+2, index_close_parenthesis);
+            //ensure we don't have extra ( 
+			int openCount = term_2.length() - term_2.replaceAll("\\(", "").length();
+			int closeCount = term_2.length() - term_2.replaceAll("\\)", "").length();
+			int many_to_delete = closeCount - openCount;
+			System.out.println("\n t2 before " + term_2);
+			System.out.println("\n to be replaced before " + to_be_replaced);
+			
+			if (many_to_delete>0) {
+			    term_2 = term_2.substring(0, term_2.length()-many_to_delete);
+			    to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
+			}
+            System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
+            String replace_with = "(!" +term_1+")OR" + term_2;
+            System.out.println(replace_with);
+            formula = formula.replace(to_be_replaced, replace_with);
+            System.out.println(formula);
         }
         return formula;
     }
