@@ -14,19 +14,21 @@ import java.util.HashMap;
 
 public class FormulaParser {
     // Reduction to dnf, the result will be the set of each cube
-    // we consider  input made with parenthesis for each connective: (R(a)) <-> ((a=b)AND(R(b)))
-    // even for negation: (!(A))<->(B)
+    // USE [] FOR NORMAL PARENTESIS OF ORDER OF CONNECTIVES, USE () ONLY FOR FUNCTION/RELATIONS : [A] AND [B], [F(A)]->[B]
+    // we consider  input made with parenthesis for each connective: [R(a)] <-> [[a=b]AND[R(b)]]
+    // even for negation: [![A]]<->[B]
     // A AND B OR C AND D -->  {A AND B,
     //                          C AND D  }
     public static Set<String> FormulatoDNF(String formula) {
         Set<String> to_return = new HashSet<>();
         //reduction to NNF
         String formula_NNF = FormulatoNNF(formula);
-
+        //handling AND over OR    [A]AND[[B]OR[C]] --> [A]AND[B]OR[A]AND[C]
+        //[[B]OR[C]]AND[A]  --> [A]AND[B]OR[A]AND[C]
         return to_return;
     }
     
-    // -> <->    R(a)<->R(b)    !(a=b)
+    // -> <->    R(a)<->R(b)    ![a=b]
     public static String FormulatoNNF(String formula) {
         formula = formula.replaceAll(" ", "");
         //handling <->
@@ -35,24 +37,24 @@ public class FormulaParser {
             int lvl_biconditional = 0;
             //left to right, encoutering ( increase the lvl, deeper
             for (int i =0 ; i<index_biconditional ; i++) {
-                if (formula.charAt(i) == '(') {
+                if (formula.charAt(i) == '[') {
                     lvl_biconditional++;
                 }
-                if (formula.charAt(i) == ')') {
+                if (formula.charAt(i) == ']') {
                     lvl_biconditional--;
                 }
             }
-            // (R(a) <-> R(b)) -----> (R(a) -> R(b)) AND (R(b) -> R(a))
+            // [R(a) <-> R(b)] -----> [[R(a)] -> [R(b)]] AND [[R(b)] -> [R(a)]]
             int index_open_parenthesis = 0;
             int index_close_parenthesis = 0;
             int curr_lvl = lvl_biconditional;
 
-            //right to left, encountering ( decrease the lvl, less deep
+            //right to left, encountering [ decrease the lvl, less deep
             for (int i = index_biconditional; curr_lvl >= lvl_biconditional && i>=0 ; i--) {
-                if (formula.charAt(i) == '(') {
+                if (formula.charAt(i) == '[') {
                     curr_lvl--;
                 }
-                if (formula.charAt(i) == ')') {
+                if (formula.charAt(i) == ']') {
                     curr_lvl++;
                 }
                 index_open_parenthesis = i;
@@ -61,12 +63,12 @@ public class FormulaParser {
 				index_open_parenthesis++;
 			}
             curr_lvl = lvl_biconditional;
-            //left to right, encoutering ( increase the lvl, deeper
+            //left to right, encoutering [ increase the lvl, deeper
             for (int i = index_biconditional+3; curr_lvl >= lvl_biconditional && i<formula.length(); i++) {
-                if (formula.charAt(i) == '(') {
+                if (formula.charAt(i) == '[') {
                     curr_lvl++;
                 }
-                if (formula.charAt(i) == ')') {
+                if (formula.charAt(i) == ']') {
                     curr_lvl--;
                 }
                 index_close_parenthesis = i;
@@ -77,34 +79,35 @@ public class FormulaParser {
             String to_be_replaced = formula.substring(index_open_parenthesis, index_close_parenthesis);
             String term_1 = formula.substring(index_open_parenthesis, index_biconditional);
             String term_2 = formula.substring(index_biconditional+3, index_close_parenthesis);
-            //ensure we don't have extra ( 
-			int openCount = term_2.length() - term_2.replaceAll("\\(", "").length();
-			int closeCount = term_2.length() - term_2.replaceAll("\\)", "").length();
+            //ensure we don't have extra [ 
+			int openCount = term_2.length() - term_2.replaceAll("\\[", "").length();
+			int closeCount = term_2.length() - term_2.replaceAll("\\]", "").length();
 			int many_to_delete = closeCount - openCount;
 			System.out.println("\n t2 before " + term_2);
 			System.out.println("\n to be replaced before " + to_be_replaced);
 			
 			if (many_to_delete>0) {
+                System.out.println("number of ] to delete = "+many_to_delete);
 			    term_2 = term_2.substring(0, term_2.length()-many_to_delete);
 			    to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
 			}
             System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
-            String replace_with = "(" +term_1+"->" + term_2 + ")AND(" + term_2 + "->" + term_1 + ")";
+            String replace_with = "[" +term_1+"->" + term_2 + "]AND[" + term_2 + "->" + term_1 + "]";
             System.out.println(replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
             System.out.println(formula);
         }
-        
+
         //handling ->
         while (formula.contains("->")) {
             int index_implication = formula.indexOf("->");
             int lvl_implication = 0;
-            //left to right, encoutering ( increase the lvl, deeper
+            //left to right, encoutering [ increase the lvl, deeper
             for (int i =0 ; i<index_implication ; i++) {
-                if (formula.charAt(i) == '(') {
+                if (formula.charAt(i) == '[') {
                     lvl_implication++;
                 }
-                if (formula.charAt(i) == ')') {
+                if (formula.charAt(i) == ']') {
                     lvl_implication--;
                 }
             }
@@ -115,10 +118,10 @@ public class FormulaParser {
 
             //right to left, encountering ( decrease the lvl, less deep
             for (int i = index_implication; curr_lvl >= lvl_implication && i>=0 ; i--) {
-                if (formula.charAt(i) == '(') {
+                if (formula.charAt(i) == '[') {
                     curr_lvl--;
                 }
-                if (formula.charAt(i) == ')') {
+                if (formula.charAt(i) == ']') {
                     curr_lvl++;
                 }
                 index_open_parenthesis = i;
@@ -129,23 +132,23 @@ public class FormulaParser {
             curr_lvl = lvl_implication;
             //left to right, encoutering ( increase the lvl, deeper
             for (int i = index_implication+2; curr_lvl >= lvl_implication && i<formula.length(); i++) {
-                if (formula.charAt(i) == '(') {
+                if (formula.charAt(i) == '[') {
                     curr_lvl++;
                 }
-                if (formula.charAt(i) == ')') {
+                if (formula.charAt(i) == ']') {
                     curr_lvl--;
                 }
                 index_close_parenthesis = i;
             }
             if(index_close_parenthesis == formula.length()-1) {
-                index_close_parenthesis++;
+                index_close_parenthesis++; 
             }
             String to_be_replaced = formula.substring(index_open_parenthesis, index_close_parenthesis);
             String term_1 = formula.substring(index_open_parenthesis, index_implication);
             String term_2 = formula.substring(index_implication+2, index_close_parenthesis);
             //ensure we don't have extra ( 
-			int openCount = term_2.length() - term_2.replaceAll("\\(", "").length();
-			int closeCount = term_2.length() - term_2.replaceAll("\\)", "").length();
+			int openCount = term_2.length() - term_2.replaceAll("\\[", "").length();
+			int closeCount = term_2.length() - term_2.replaceAll("\\]", "").length();
 			int many_to_delete = closeCount - openCount;
 			System.out.println("\n t2 before " + term_2);
 			System.out.println("\n to be replaced before " + to_be_replaced);
@@ -155,10 +158,139 @@ public class FormulaParser {
 			    to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
 			}
             System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
-            String replace_with = "(!" +term_1+")OR" + term_2;
+            String replace_with = "[!" +term_1+"]OR" + term_2;
             System.out.println(replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
             System.out.println(formula);
+        }
+
+        //handling   ![![[A]and[b]]] --> [A]and[b]  ![![atom]]    ![[c]AND[[![R]]OR[C]]]
+        while (formula.contains("![!")) {
+            int index_double_negation = formula.indexOf("![!");
+            int lvl_double_negation = 0;
+            //left to right, encoutering [ increase the lvl, deeper
+            for (int i =0 ; i<index_double_negation ; i++) {
+                if (formula.charAt(i) == '[') {
+                    lvl_double_negation++;
+                }
+                if (formula.charAt(i) == ']') {
+                    lvl_double_negation--;
+                }
+            }
+            int index_close_parenthesis = 0;
+            int curr_lvl = lvl_double_negation + 1;
+            for (int i = index_double_negation+2; curr_lvl > lvl_double_negation && i<formula.length(); i++) {
+                if (formula.charAt(i) == '[') {
+                    curr_lvl++;
+                }
+                if (formula.charAt(i) == ']') {
+                    curr_lvl--;
+                }
+                index_close_parenthesis = i;
+            }
+            index_close_parenthesis++;
+            String to_be_replaced = formula.substring(index_double_negation, index_close_parenthesis);
+            String replace_with = formula.substring(index_double_negation+4, index_close_parenthesis-2);
+            System.out.println("to_be_replaced  "+to_be_replaced);
+            System.out.println("replcae with "+replace_with);
+            formula = formula.replace(to_be_replaced, replace_with);
+            System.out.println("final is "+formula);
+        }  
+        //handling ![[A]AND[B]] --> [![A]]OR[![B]]
+        //handling ![[A]OR[B]] --> [![A]]AND[![B]]
+        while (formula.contains("![[")) {
+            int index_negation_to_distribute = formula.indexOf("![[");
+            int lvl_negation_to_distribute = 0;
+            //left to right, encoutering [ increase the lvl, deeper
+            for (int i =0 ; i<index_negation_to_distribute ; i++) {
+                if (formula.charAt(i) == '[') {
+                    lvl_negation_to_distribute++;
+                }
+                if (formula.charAt(i) == ']') {
+                    lvl_negation_to_distribute--;
+                }
+            }
+            int index_close_parenthesis = 0;
+            int curr_lvl = lvl_negation_to_distribute + 1;
+            for (int i = index_negation_to_distribute+2; curr_lvl > lvl_negation_to_distribute && i<formula.length(); i++) {
+                if (formula.charAt(i) == '[') {
+                    curr_lvl++;
+                }
+                if (formula.charAt(i) == ']') {
+                    curr_lvl--;
+                }
+                index_close_parenthesis = i;
+            }
+            index_close_parenthesis++;
+            String to_be_replaced = formula.substring(index_negation_to_distribute, index_close_parenthesis);
+            //check what is the connective to distribute the negation over
+            int index_and = 0;
+            int index_or = 0;
+            curr_lvl = lvl_negation_to_distribute + 1;
+            for (int i = index_negation_to_distribute+2; curr_lvl > lvl_negation_to_distribute && i<formula.length(); i++) {
+                if (formula.charAt(i) == '[') {
+                    curr_lvl++;
+                }
+                if (formula.charAt(i) == ']') {
+                    curr_lvl--;
+                }
+                if (curr_lvl == (lvl_negation_to_distribute+1) && formula.charAt(i) == 'A') {
+                    if (formula.charAt(i+1) == 'N' && formula.charAt(i+2) == 'D') {
+                        index_and = i;
+                    }
+                }
+                if (curr_lvl == (lvl_negation_to_distribute+1) && formula.charAt(i) == 'O') {
+                    if (formula.charAt(i+1) == 'R') {
+                        index_or = i;
+                    }
+                }
+            }
+            //we have a AND
+            String replace_with = new String();
+            if (index_and>0) {
+                replace_with = "[!" + formula.substring(index_negation_to_distribute+2, index_and-1) + "]]OR[!" + formula.substring(index_and+3, index_close_parenthesis-1) + "]";
+                
+            }
+            //we have a OR
+            if (index_or>0) {
+                replace_with = "[!" + formula.substring(index_negation_to_distribute+2, index_or-1) + "]]AND[!" + formula.substring(index_or+2, index_close_parenthesis-1) + "]";
+            }
+            
+            System.out.println("to_be_replaced  "+to_be_replaced);
+            System.out.println("replcae with "+replace_with);
+            formula = formula.replace(to_be_replaced, replace_with);
+            System.out.println("final is "+formula);
+        }
+        while (formula.contains("![!")) {
+            int index_double_negation = formula.indexOf("![!");
+            int lvl_double_negation = 0;
+            //left to right, encoutering [ increase the lvl, deeper
+            for (int i =0 ; i<index_double_negation ; i++) {
+                if (formula.charAt(i) == '[') {
+                    lvl_double_negation++;
+                }
+                if (formula.charAt(i) == ']') {
+                    lvl_double_negation--;
+                }
+            }
+            int index_close_parenthesis = 0;
+            int curr_lvl = lvl_double_negation + 1;
+            for (int i = index_double_negation+2; curr_lvl > lvl_double_negation && i<formula.length(); i++) {
+                if (formula.charAt(i) == '[') {
+                    curr_lvl++;
+                }
+                if (formula.charAt(i) == ']') {
+                    curr_lvl--;
+                }
+                index_close_parenthesis = i;
+            }
+            index_close_parenthesis++;
+            String to_be_replaced = formula.substring(index_double_negation, index_close_parenthesis);
+            String replace_with = formula.substring(index_double_negation+4, index_close_parenthesis-2);
+            //System.out.println("to_be_replaced  "+to_be_replaced);
+            //System.out.println("replcae with "+replace_with);
+            formula = formula.replace(to_be_replaced, replace_with);
+            //System.out.println("final is "+formula);
         }
         return formula;
     }
@@ -277,6 +409,7 @@ public class FormulaParser {
         //here we handle the not (!) since it is only applcable to the relations
         for (String s : F) {
             if(! s.contains("=")) {
+                if (s.contains("atom")) continue ;
                 if (s.contains("!")) {
                     //System.out.println("found !");
                     int index = s.indexOf("!");
