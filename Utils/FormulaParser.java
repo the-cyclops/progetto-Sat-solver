@@ -29,11 +29,16 @@ public class FormulaParser {
         int lvl_and = 0;
         int index_and = 0;
         boolean changed = true;
+        if (! formula_NNF.contains("OR")) changed = false;
         while (changed){
             String iter = formula_NNF;
             //System.out.println("aaaaaaaa");
-            for (int j = 0; j<iter.length(); j++) {
+            for (int j = 0; j<=iter.length(); j++) {
                 //System.out.println(formula_NNF);
+                if (j == iter.length()) {
+                    changed = false;
+                    break;
+                }
                 if (formula_NNF.charAt(j) == '[') {
                     curr_lvl++;
                     continue;
@@ -223,7 +228,6 @@ public class FormulaParser {
                                 break;
                             
                         }
-                        
                         
                         changed= false;
                         
