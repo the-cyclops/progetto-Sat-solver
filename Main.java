@@ -14,6 +14,7 @@ public class Main {
         //Set<String> clauses = FormulaParser.FormulatoDNF(formula);
         //System.out.println(clauses);
         //System.out.println("FINE TEST NNF\n----------------------------------------------");
+        //IN FORMULA YOU CAN'T HAVE [car(cons(a,b))=b]AND[a!=b]   but you have [car(v)=b]AND[a!=b]AND[cons(a,b)=v]
         String formula = "";
         String filepath = "input.txt";
         try {
