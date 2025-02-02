@@ -25,6 +25,222 @@ public class FormulaParser {
         String formula_NNF = FormulatoNNF(formula);
         //handling AND over OR    [A]AND[[B]OR[C]] --> [A]AND[B]OR[A]AND[C]
         //[[B]OR[C]]AND[A]  --> [A]AND[B]OR[A]AND[C]
+        int curr_lvl = 0;
+        int lvl_and = 0;
+        int index_and = 0;
+        boolean changed = true;
+        while (changed){
+            String iter = formula_NNF;
+            //System.out.println("aaaaaaaa");
+            for (int j = 0; j<iter.length(); j++) {
+                //System.out.println(formula_NNF);
+                if (formula_NNF.charAt(j) == '[') {
+                    curr_lvl++;
+                    continue;
+                }
+                if (formula_NNF.charAt(j) == ']') {
+                    curr_lvl--;
+                    continue;
+                }
+                if (formula_NNF.charAt(j) == 'A') {
+                    if (formula_NNF.charAt(j+1) == 'N' && formula_NNF.charAt(j+2) == 'D') {
+                        lvl_and = curr_lvl;
+                        index_and = j;
+                        int index_open_parenthesis = 0;
+                        int index_close_parenthesis = 0;
+                        
+                        //right to left, encountering [ decrease the lvl, less deep
+                        for (int i = index_and; curr_lvl >= lvl_and && i>=0 ; i--) {
+                            if (formula_NNF.charAt(i) == '[') {
+                                curr_lvl--;
+                            }
+                            if (formula_NNF.charAt(i) == ']') {
+                                curr_lvl++;
+                            }
+                            index_open_parenthesis = i;
+                        }
+                        if(index_open_parenthesis>0 || curr_lvl< lvl_and) {
+                            index_open_parenthesis++;
+                        }
+                        curr_lvl = lvl_and;
+                        //left to right, encoutering [ increase the lvl, deeper
+                        for (int i = index_and+3; curr_lvl >= lvl_and && i<formula_NNF.length(); i++) {
+                            if (formula_NNF.charAt(i) == '[') {
+                                curr_lvl++;
+                            }
+                            if (formula_NNF.charAt(i) == ']') {
+                                curr_lvl--;
+                            }
+                            index_close_parenthesis = i;
+                        }
+                        if(index_close_parenthesis == formula_NNF.length()-1) {
+                            index_close_parenthesis++;
+                        }
+                        String to_be_replaced = formula_NNF.substring(index_open_parenthesis, index_close_parenthesis);
+                        String term_1 = formula_NNF.substring(index_open_parenthesis, index_and);
+                        String term_2 = formula_NNF.substring(index_and+3, index_close_parenthesis);
+                        //ensure we don't have extra [ 
+                        int openCount = term_2.length() - term_2.replaceAll("\\[", "").length();
+                        int closeCount = term_2.length() - term_2.replaceAll("\\]", "").length();
+                        int many_to_delete = closeCount - openCount;
+                        //System.out.println("\n t2 before " + term_2);
+                        //System.out.println("\n to be replaced before " + to_be_replaced);
+                        
+                        if (many_to_delete>0) {
+                            //System.out.println("number of ] to delete = "+many_to_delete);
+                            term_2 = term_2.substring(0, term_2.length()-many_to_delete);
+                            to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
+                        }
+                        //System.out.println (to_be_replaced + "\n term_1 " + term_1 + "\n t2 " + term_2);
+                        //System.out.println(formula_NNF);
+                        //check term_1
+                        if (term_1.contains("OR"))  {
+                            int t1_lvl = 0;
+                            int t1_open_parenthesis = 0;
+                            int t1_close_parenthesis = 0;
+                            int or_index = -1;
+                            for (int i = 0; i<term_1.length() ; i++) {
+                                if (term_1.charAt(i) == '[') {
+                                    t1_lvl++;
+                                }
+                                if (term_1.charAt(i) == ']') {
+                                    t1_lvl--;
+                                }
+                                //complete from here
+                                if (t1_lvl == 1 && term_1.charAt(i) == 'O'){
+                                    if (term_1.charAt(i+1) == 'R') {
+                                        or_index = i;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (or_index == -1) continue; 
+                                // Find the boundaries of the two terms
+                                // For term1_1, search backwards from OR until we find matching bracket at level 1
+                                t1_lvl = 1;  // Start at level 1 since OR is at level 1
+                                for (int i = or_index - 1; i >= 0; i--) {
+                                    if (term_1.charAt(i) == ']') {
+                                        t1_lvl++;
+                                    } else if (term_1.charAt(i) == '[') {
+                                        t1_lvl--;
+                                        if (t1_lvl == 0) {  // Found the matching opening bracket
+                                            t1_open_parenthesis = i;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                // For term1_2, search forwards from OR until we find matching bracket at level 1
+                                t1_lvl = 1;  // Reset level
+                                for (int i = or_index + 2; i < term_1.length(); i++) {
+                                    if (term_1.charAt(i) == '[') {
+                                        t1_lvl++;
+                                    } else if (term_1.charAt(i) == ']') {
+                                        t1_lvl--;
+                                        if (t1_lvl == 0) {  // Found the matching closing bracket
+                                            t1_close_parenthesis = i;
+                                            break;
+                                        }
+                                    }
+                                }
+                                // Extract the two terms
+                                String term1_1 = term_1.substring(t1_open_parenthesis, or_index);
+                                String term1_2 = term_1.substring(or_index + 2, t1_close_parenthesis);
+                                
+                                // Create the new formula by replacing term_1 with the separated terms
+                                //[[A]AND[B]]OR[[A]AND[C]]   [[B]AND[A]]OR[[C]AND[A]]
+                                String new_formula =  term1_1 + "AND" + term_2 + "]OR[" + 
+                                                   term1_2 + "AND" + term_2 + "]";
+                                //System.out.println("substitution on left = " + new_formula);
+                                //System.out.println("formula to be replaced " + to_be_replaced);
+                                formula_NNF = formula_NNF.replace(to_be_replaced,new_formula);
+                                //System.out.println("formula after replace " + formula_NNF);
+                                break;
+                        }
+                        //check term_2
+                        if (term_2.contains("OR")) {
+                            int t2_lvl = 0;
+                            int t2_open_parenthesis = 0;
+                            int t2_close_parenthesis = 0;
+                            int or_index = -1;
+                            
+                            // Find OR at level 1
+                            for (int i = 0; i < term_2.length(); i++) {
+                                if (term_2.charAt(i) == '[') {
+                                    t2_lvl++;
+                                }
+                                if (term_2.charAt(i) == ']') {
+                                    t2_lvl--;
+                                }
+                                if (t2_lvl == 1 && term_2.charAt(i) == 'O') {
+                                    if (term_2.charAt(i+1) == 'R') {
+                                        or_index = i;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (or_index == -1) continue;
+                                // Find the boundaries of the two terms
+                                // For term2_1, search backwards from OR
+                                t2_lvl = 1;  // Start at level 1 since OR is at level 1
+                                for (int i = or_index - 1; i >= 0; i--) {
+                                    if (term_2.charAt(i) == ']') {
+                                        t2_lvl++;
+                                    } else if (term_2.charAt(i) == '[') {
+                                        t2_lvl--;
+                                        if (t2_lvl == 0) {  // Found the matching opening bracket
+                                            t2_open_parenthesis = i;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                // For term2_2, search forwards from OR
+                                t2_lvl = 1;  // Reset level
+                                for (int i = or_index + 2; i < term_2.length(); i++) {
+                                    if (term_2.charAt(i) == '[') {
+                                        t2_lvl++;
+                                    } else if (term_2.charAt(i) == ']') {
+                                        t2_lvl--;
+                                        if (t2_lvl == 0) {  // Found the matching closing bracket
+                                            t2_close_parenthesis = i;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                // Extract the two terms
+                                String term2_1 = term_2.substring(t2_open_parenthesis+1, or_index);
+                                String term2_2 = term_2.substring(or_index + 2, t2_close_parenthesis);
+                                
+                                // Create the new formula by replacing term_2 with the separated terms
+                                String new_formula ="["+ term_1 + "AND" + term2_1 + "]OR[" + 
+                                                   term_1 + "AND" + term2_2 + "]";
+                                //System.out.println("substitution on right = " + new_formula);
+                                formula_NNF = formula_NNF.replace(to_be_replaced, new_formula);
+                                break;
+                            
+                        }
+                        
+                        
+                        changed= false;
+                        
+                    }
+                    
+                }
+               
+                
+            }
+        }
+        System.out.println("formula final before split = " + formula_NNF +" \n");
+        Set<String> remove_parenthesis = new HashSet<>(Arrays.asList(formula_NNF.split("OR")));
+        //remove all [ and ] from the set
+        for (String s : remove_parenthesis) {
+            s = s.replaceAll("\\[", "").replaceAll("\\]", "");
+            to_return.add(s);
+        }
         return to_return;
     }
     
@@ -44,7 +260,7 @@ public class FormulaParser {
                     lvl_biconditional--;
                 }
             }
-            // [R(a) <-> R(b)] -----> [[R(a)] -> [R(b)]] AND [[R(b)] -> [R(a)]]
+            // [R(a)] <-> [R(b)] -----> [[R(a)] -> [R(b)]] AND [[R(b)] -> [R(a)]]
             int index_open_parenthesis = 0;
             int index_close_parenthesis = 0;
             int curr_lvl = lvl_biconditional;
