@@ -10,7 +10,7 @@
   - Example: `[[![A]] AND [B]] -> [C]`
 - If a formula contains only `AND`, brackets `[]` are optional:
   - Example: `A AND B AND C`
-- **NB:** Don't use `(`, `)` outside of functions and relations, :
+- **NB:** Don't use `(`, `)` outside of functions and predicates :
   - Example: `[a=b] OR [R(d)]`
 
 ## Running the Program
