@@ -15,6 +15,7 @@ public class Main {
         //System.out.println(clauses);
         //System.out.println("FINE TEST NNF\n----------------------------------------------");
         //IN FORMULA YOU CAN'T HAVE [car(cons(a,b))=b]AND[a!=b]   but you have [car(v)=b]AND[a!=b]AND[cons(a,b)=v]
+        Long time_begin = System.currentTimeMillis();
         String formula = "";
         String filepath = "input.txt";
         try {
@@ -34,17 +35,17 @@ public class Main {
                 cubes.addAll(Formulas_without_store);
             }
         }
-        System.out.println("--------------");
+        //System.out.println("--------------");
         System.out.println("cubes are "+cubes);
         Boolean unsat_flag = true;
         for (String cube : cubes) {
-            System.out.println("working on cube = " + cube);
+            System.out.println("\n(predicates still need to be changed to functions, also atom will be handled later)\nworking on cube = " + cube);
             Set<String> F = FormulaParser.FormulatoConjuncts(cube);
-            System.out.println("--------------");
-            System.out.println(F);  
+            //System.out.println("--------------");
+            //System.out.println(F);  
             Set<String> Sf = FormulaParser.ConjunctstoTerms(F);
-            System.out.println("--------------");
-            System.out.println(Sf);
+            //System.out.println("--------------");
+            //System.out.println(Sf);
             Set<List<String>> forbidden_set = FormulaParser.get_forbiddenset(F);
             //System.out.println("--------------");
             //System.out.println(forbidden_set);
@@ -56,26 +57,30 @@ public class Main {
             //System.out.println("id equalities = "+ solver.equalities);
             //System.out.println("--------------");
 //  
-            System.out.println(solver);
-            System.out.println("--------------");
-            System.out.println(solver.getEqualities());
-            System.out.println("--------------");
-            System.out.println("inequalities are = " + solver.getInequalities());
+            //System.out.println(solver);
+            //System.out.println("--------------");
+            //System.out.println(solver.getEqualities());
+            //System.out.println("--------------");
+            //System.out.println("inequalities are = " + solver.getInequalities());
             if(solver.solve()) {
-                System.out.println(solver);
-                System.out.println("SAT");
+                //System.out.println("aaaaaaaaaa"+solver);
+                System.out.println("\n\nFormula is SAT");
                 unsat_flag = false;
+                Long time_end = System.currentTimeMillis();
+                System.out.println("Execution time = " + (time_end - time_begin) + " ms");
                 break;
             } 
             else {
-                System.out.println(solver);
+                //System.out.println(solver);
                 cube = cube.replace(" ", "");
-                System.out.println(cube + " is unsat, proceeding with next cube");
+                System.out.println(cube + " is UNSAT, proceeding with next cube");
             }
         }
         if(unsat_flag) {
-            System.out.println("--------------");
-            System.out.println("\n Whole formula is UNSAT since all cubes are unsat");
+            //System.out.println("--------------");
+            System.out.println("\n\nWhole formula is UNSAT since all cubes are UNSAT");
+            Long time_end = System.currentTimeMillis();
+            System.out.println("Execution time = " + (time_end - time_begin) + " ms");
         }
         
     }
