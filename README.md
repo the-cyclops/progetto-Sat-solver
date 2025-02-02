@@ -12,7 +12,9 @@
   - Example: `A AND B AND C`
 - **NB:** Don't use `(`, `)` outside of functions and predicates :
   - Example: `[a=b] OR [R(d)]`
-
+- **NB:** In the formula, you can't have `cons` inside `car`/`cdr`:
+  - Incorrect: `[car(cons(a,b))=b] OR [a!=b]`
+  - Correct: `[[car(v)=b] AND [cons(a,b)=v]] AND [a!=b]`
 ## Running the Program
 Navigate to the project folder and run the following command:
 ```sh
