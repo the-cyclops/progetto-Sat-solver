@@ -238,13 +238,48 @@ public class FormulaParser {
                 
             }
         }
-        System.out.println("formula final before split = " + formula_NNF +" \n");
+        //System.out.println("formula final before split = " + formula_NNF +" \n");
         Set<String> remove_parenthesis = new HashSet<>(Arrays.asList(formula_NNF.split("OR")));
+        
         //remove all [ and ] from the set
         for (String s : remove_parenthesis) {
             s = s.replaceAll("\\[", "").replaceAll("\\]", "");
             to_return.add(s);
         }
+        //applying ! to = 
+        //System.out.println("to_return "+to_return);
+        Set<String> not_over_equal =  new HashSet<>(to_return);
+        //System.out.println("not_over_equal "+not_over_equal);
+        for (String s : not_over_equal) {
+            if (s.contains("!")) {
+                String to_be_replaced = s;
+                String[] split = s.split("AND");
+                Set<String> split_replace = new HashSet<>(Arrays.asList(split));
+                //System.out.println("split_replace "+split_replace);
+                for (String relation : split) {
+                    //System.out.println("inside with relation "+relation);
+                    if (relation.contains("=") && relation.contains("!")) {
+                        split_replace.remove(relation);
+                        relation = relation.replaceAll("!", "");
+                        relation = relation.replace("=", "!=");
+                        split_replace.add(relation);
+                    }
+                }
+                String replace_with = new String();
+                for (String relation : split_replace) {
+                    replace_with += relation + "AND";
+                }
+                replace_with = replace_with.substring(0, replace_with.length()-3);
+                //System.out.println("replace_with "+replace_with);
+                //System.out.println("to_return before "+to_return);
+                to_return.remove(to_be_replaced);
+                to_return.add(replace_with);
+                //System.out.println("to_return after "+to_return);
+                
+                //System.out.println("not_over_equal "+not_over_equal);
+            }
+                     
+        }    
         return to_return;
     }
     
