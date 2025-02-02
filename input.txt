@@ -1,1 +1,1 @@
-f(a) != f(a)
+[[a = b ]OR [c != d]] AND [[e = f] OR [g != h]]
