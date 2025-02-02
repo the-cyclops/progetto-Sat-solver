@@ -32,9 +32,9 @@ public class FormulaParser {
         if (! formula_NNF.contains("OR")) changed = false;
         while (changed){
             String iter = formula_NNF;
-            //System.out.println("aaaaaaaa");
+            ////System.out.println("aaaaaaaa");
             for (int j = 0; j<=iter.length(); j++) {
-                //System.out.println(formula_NNF);
+                ////System.out.println(formula_NNF);
                 if (j == iter.length()) {
                     changed = false;
                     break;
@@ -88,16 +88,16 @@ public class FormulaParser {
                         int openCount = term_2.length() - term_2.replaceAll("\\[", "").length();
                         int closeCount = term_2.length() - term_2.replaceAll("\\]", "").length();
                         int many_to_delete = closeCount - openCount;
-                        //System.out.println("\n t2 before " + term_2);
-                        //System.out.println("\n to be replaced before " + to_be_replaced);
+                        ////System.out.println("\n t2 before " + term_2);
+                        ////System.out.println("\n to be replaced before " + to_be_replaced);
                         
                         if (many_to_delete>0) {
-                            //System.out.println("number of ] to delete = "+many_to_delete);
+                            ////System.out.println("number of ] to delete = "+many_to_delete);
                             term_2 = term_2.substring(0, term_2.length()-many_to_delete);
                             to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
                         }
-                        //System.out.println (to_be_replaced + "\n term_1 " + term_1 + "\n t2 " + term_2);
-                        //System.out.println(formula_NNF);
+                        ////System.out.println (to_be_replaced + "\n term_1 " + term_1 + "\n t2 " + term_2);
+                        ////System.out.println(formula_NNF);
                         //check term_1
                         if (term_1.contains("OR"))  {
                             int t1_lvl = 0;
@@ -157,10 +157,10 @@ public class FormulaParser {
                                 //[[A]AND[B]]OR[[A]AND[C]]   [[B]AND[A]]OR[[C]AND[A]]
                                 String new_formula =  term1_1 + "AND" + term_2 + "]OR[" + 
                                                    term1_2 + "AND" + term_2 + "]";
-                                //System.out.println("substitution on left = " + new_formula);
-                                //System.out.println("formula to be replaced " + to_be_replaced);
+                                ////System.out.println("substitution on left = " + new_formula);
+                                ////System.out.println("formula to be replaced " + to_be_replaced);
                                 formula_NNF = formula_NNF.replace(to_be_replaced,new_formula);
-                                //System.out.println("formula after replace " + formula_NNF);
+                                ////System.out.println("formula after replace " + formula_NNF);
                                 break;
                         }
                         //check term_2
@@ -223,7 +223,7 @@ public class FormulaParser {
                                 // Create the new formula by replacing term_2 with the separated terms
                                 String new_formula ="["+ term_1 + "AND" + term2_1 + "]OR[" + 
                                                    term_1 + "AND" + term2_2 + "]";
-                                //System.out.println("substitution on right = " + new_formula);
+                                ////System.out.println("substitution on right = " + new_formula);
                                 formula_NNF = formula_NNF.replace(to_be_replaced, new_formula);
                                 break;
                             
@@ -238,7 +238,7 @@ public class FormulaParser {
                 
             }
         }
-        //System.out.println("formula final before split = " + formula_NNF +" \n");
+        ////System.out.println("formula final before split = " + formula_NNF +" \n");
         Set<String> remove_parenthesis = new HashSet<>(Arrays.asList(formula_NNF.split("OR")));
         
         //remove all [ and ] from the set
@@ -247,17 +247,17 @@ public class FormulaParser {
             to_return.add(s);
         }
         //applying ! to = 
-        //System.out.println("to_return "+to_return);
+        ////System.out.println("to_return "+to_return);
         Set<String> not_over_equal =  new HashSet<>(to_return);
-        //System.out.println("not_over_equal "+not_over_equal);
+        ////System.out.println("not_over_equal "+not_over_equal);
         for (String s : not_over_equal) {
             if (s.contains("!")) {
                 String to_be_replaced = s;
                 String[] split = s.split("AND");
                 Set<String> split_replace = new HashSet<>(Arrays.asList(split));
-                //System.out.println("split_replace "+split_replace);
+                ////System.out.println("split_replace "+split_replace);
                 for (String relation : split) {
-                    //System.out.println("inside with relation "+relation);
+                    ////System.out.println("inside with relation "+relation);
                     if (relation.contains("=") && relation.contains("!")) {
                         split_replace.remove(relation);
                         relation = relation.replaceAll("!", "");
@@ -270,13 +270,13 @@ public class FormulaParser {
                     replace_with += relation + "AND";
                 }
                 replace_with = replace_with.substring(0, replace_with.length()-3);
-                //System.out.println("replace_with "+replace_with);
-                //System.out.println("to_return before "+to_return);
+                ////System.out.println("replace_with "+replace_with);
+                ////System.out.println("to_return before "+to_return);
                 to_return.remove(to_be_replaced);
                 to_return.add(replace_with);
-                //System.out.println("to_return after "+to_return);
+                ////System.out.println("to_return after "+to_return);
                 
-                //System.out.println("not_over_equal "+not_over_equal);
+                ////System.out.println("not_over_equal "+not_over_equal);
             }
                      
         }    
@@ -338,19 +338,19 @@ public class FormulaParser {
 			int openCount = term_2.length() - term_2.replaceAll("\\[", "").length();
 			int closeCount = term_2.length() - term_2.replaceAll("\\]", "").length();
 			int many_to_delete = closeCount - openCount;
-			System.out.println("\n t2 before " + term_2);
-			System.out.println("\n to be replaced before " + to_be_replaced);
+			//System.out.println("\n t2 before " + term_2);
+			//System.out.println("\n to be replaced before " + to_be_replaced);
 			
 			if (many_to_delete>0) {
-                System.out.println("number of ] to delete = "+many_to_delete);
+                //System.out.println("number of ] to delete = "+many_to_delete);
 			    term_2 = term_2.substring(0, term_2.length()-many_to_delete);
 			    to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
 			}
-            System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
+            //System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
             String replace_with = "[" +term_1+"->" + term_2 + "]AND[" + term_2 + "->" + term_1 + "]";
-            System.out.println(replace_with);
+            //System.out.println(replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
-            System.out.println(formula);
+            //System.out.println(formula);
         }
 
         //handling ->
@@ -405,18 +405,18 @@ public class FormulaParser {
 			int openCount = term_2.length() - term_2.replaceAll("\\[", "").length();
 			int closeCount = term_2.length() - term_2.replaceAll("\\]", "").length();
 			int many_to_delete = closeCount - openCount;
-			System.out.println("\n t2 before " + term_2);
-			System.out.println("\n to be replaced before " + to_be_replaced);
+			//System.out.println("\n t2 before " + term_2);
+			//System.out.println("\n to be replaced before " + to_be_replaced);
 			
 			if (many_to_delete>0) {
 			    term_2 = term_2.substring(0, term_2.length()-many_to_delete);
 			    to_be_replaced = to_be_replaced.substring(0, to_be_replaced.length()-many_to_delete);
 			}
-            System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
+            //System.out.println (to_be_replaced + "\n t1 " + term_1 + "\n t2 " + term_2);
             String replace_with = "[!" +term_1+"]OR" + term_2;
-            System.out.println(replace_with);
+            //System.out.println(replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
-            System.out.println(formula);
+            //System.out.println(formula);
         }
 
         //handling   ![![[A]and[b]]] --> [A]and[b]  ![![atom]]    ![[c]AND[[![R]]OR[C]]]
@@ -446,10 +446,10 @@ public class FormulaParser {
             index_close_parenthesis++;
             String to_be_replaced = formula.substring(index_double_negation, index_close_parenthesis);
             String replace_with = formula.substring(index_double_negation+4, index_close_parenthesis-2);
-            System.out.println("to_be_replaced  "+to_be_replaced);
-            System.out.println("replcae with "+replace_with);
+            //System.out.println("to_be_replaced  "+to_be_replaced);
+            //System.out.println("replcae with "+replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
-            System.out.println("final is "+formula);
+            //System.out.println("final is "+formula);
         }  
         //handling ![[A]AND[B]] --> [![A]]OR[![B]]
         //handling ![[A]OR[B]] --> [![A]]AND[![B]]
@@ -511,10 +511,10 @@ public class FormulaParser {
                 replace_with = "[!" + formula.substring(index_negation_to_distribute+2, index_or-1) + "]]AND[!" + formula.substring(index_or+2, index_close_parenthesis-1) + "]";
             }
             
-            System.out.println("to_be_replaced  "+to_be_replaced);
-            System.out.println("replcae with "+replace_with);
+            //System.out.println("to_be_replaced  "+to_be_replaced);
+            //System.out.println("replcae with "+replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
-            System.out.println("final is "+formula);
+            //System.out.println("final is "+formula);
         }
         while (formula.contains("![!")) {
             int index_double_negation = formula.indexOf("![!");
@@ -542,10 +542,10 @@ public class FormulaParser {
             index_close_parenthesis++;
             String to_be_replaced = formula.substring(index_double_negation, index_close_parenthesis);
             String replace_with = formula.substring(index_double_negation+4, index_close_parenthesis-2);
-            //System.out.println("to_be_replaced  "+to_be_replaced);
-            //System.out.println("replcae with "+replace_with);
+            ////System.out.println("to_be_replaced  "+to_be_replaced);
+            ////System.out.println("replcae with "+replace_with);
             formula = formula.replace(to_be_replaced, replace_with);
-            //System.out.println("final is "+formula);
+            ////System.out.println("final is "+formula);
         }
         return formula;
     }
@@ -645,17 +645,17 @@ public class FormulaParser {
         //handling !atom for T-list
         for (String s : F) {
             if (s.contains("!atom(")) {
-                //System.out.println("found !atom");
+                ////System.out.println("found !atom");
                 int index = s.indexOf("(");
-                //System.out.println("found (");
+                ////System.out.println("found (");
                 String a = s.substring(index+1, s.length()-1);
-                //System.out.println("a is " + a);
+                ////System.out.println("a is " + a);
                 a+= "=cons("+a+"_1,"+ a + "_2)";
-                //System.out.println("a is " + a);
+                ////System.out.println("a is " + a);
                 toRemove.add(s);
-                //System.out.println("fatto remove");
+                ////System.out.println("fatto remove");
                 toAdd.add(a);
-                //System.out.println("fatto add");
+                ////System.out.println("fatto add");
             }
         }
 
@@ -666,23 +666,23 @@ public class FormulaParser {
             if(! s.contains("=")) {
                 if (s.contains("atom")) continue ;
                 if (s.contains("!")) {
-                    //System.out.println("found !");
+                    ////System.out.println("found !");
                     int index = s.indexOf("!");
                     String a = "f_";
                     a += s.substring(index+1, s.length());
-                    //System.out.println("a is " + a);
+                    ////System.out.println("a is " + a);
                     a+= "!=TRUE";
-                    //System.out.println("a is " + a);
+                    ////System.out.println("a is " + a);
                     toRemove.add(s);
                     
                     toAdd.add(a);
                     
                 }
                 else {
-                    //System.out.println("found R");
+                    ////System.out.println("found R");
                     String a = "f_";
                     a += s + "=TRUE";
-                    //System.out.println("a is " + a);
+                    ////System.out.println("a is " + a);
                     toRemove.add(s);
                     
                     toAdd.add(a);
@@ -705,13 +705,13 @@ public class FormulaParser {
                 for(int i=0; i< s_split.length; i++) {
                     String part = s_split[i];
                     if (part.contains("select(")) {
-                        //System.out.println("found select");
+                        ////System.out.println("found select");
                         int index_parenthesis = part.indexOf("(");
                         int index_comma = part.indexOf(",");
-                        //System.out.println("found (");
+                        ////System.out.println("found (");
                         String a ="f_" + part.substring(index_parenthesis+1, index_comma);
                         index_parenthesis = part.indexOf(")");
-                        //System.out.println("a is " + a);
+                        ////System.out.println("a is " + a);
                         a+="(" +  part.substring(index_comma +1, index_parenthesis+1) ;
                         s_split[i] = a;
                         }
@@ -730,9 +730,9 @@ public class FormulaParser {
                 }
    
                 toRemove.add(s);
-                //System.out.println("fatto remove");
+                ////System.out.println("fatto remove");
                 toAdd.add(a);
-                //System.out.println("fatto add");
+                ////System.out.println("fatto add");
             }
         }
         F.removeAll(toRemove);
@@ -769,10 +769,10 @@ public class FormulaParser {
         return F_equalities;
     }
     
-    //F = {f(f(a,b),b)=a, f(a,b)=a} -> Sf {a ,b, f(ab), f((fab, b))}
+    //F = {f(f(a,b),b)=a, f(a,b)=a} -> Sf {a ,b, f(a,b), f(f(a,b), b)}
     public static Set<String> ConjunctstoTerms(Set<String> F){
-        //System.out.println("--------------");
-        //System.out.println("chiamo con" + F);
+        ////System.out.println("--------------");
+        ////System.out.println("chiamo con" + F);
 
         Set<String> Sf = new HashSet<>();
         
@@ -784,7 +784,7 @@ public class FormulaParser {
             for(int i=0; i< split.length; i++){
                 String now = split[i];
                 String term = "";
-                //System.out.println("now: " +  now);
+                ////System.out.println("now: " +  now);
 
                 for (int c=0; c<now.length(); c++ ) {
                     //if we find a (, we know there is a function / relation to handle
@@ -808,12 +808,12 @@ public class FormulaParser {
                             }
                             j++;
                         }
-                        //System.out.println("indexes are "+ indexes);
+                        ////System.out.println("indexes are "+ indexes);
                         Iterator<Integer> index = indexes.iterator();
                         int last_comma = 0;
                         while(index.hasNext()) {
                             j = index.next();
-                            //System.out.println("j is "+j);
+                            ////System.out.println("j is "+j);
                             k_split.add(k.substring(last_comma,j));
                             last_comma = j+1;
                         }
@@ -831,10 +831,10 @@ public class FormulaParser {
                     
                 }
                 Sf.add(term);
-                //System.out.println("ora sf è " + Sf);
+                ////System.out.println("ora sf è " + Sf);
             }
         }
-        //System.out.println("fine con " + F);
+        ////System.out.println("fine con " + F);
         return Sf;
     }
 
@@ -846,7 +846,7 @@ public class FormulaParser {
         List<Node> DAG = new ArrayList<>();
         List<String> Sf_list = new ArrayList<>(Sf);
         Collections.sort(Sf_list, new MyComparator());
-        System.out.println("Sf_list is " + Sf_list);
+        //System.out.println("Sf_list is " + Sf_list);
         int id = 0;
         for (String s : Sf_list) {
             //handling constants and variables
@@ -873,12 +873,12 @@ public class FormulaParser {
                     }
                     j++;
                 }
-                //System.out.println("indexes are "+ indexes);
+                ////System.out.println("indexes are "+ indexes);
                 Iterator<Integer> index = indexes.iterator();
                 int last_comma = 0;
                 while(index.hasNext()) {
                     j = index.next();
-                    //System.out.println("j is "+j);
+                    ////System.out.println("j is "+j);
                     args.add(split.substring(last_comma,j));
                     last_comma = j+1;
                 }
@@ -888,7 +888,7 @@ public class FormulaParser {
                 if(last_comma == 0) {
                     args.add(split);
                 }
-                System.out.println("args are " + args);
+                //System.out.println("args are " + args);
                 List<Integer> id_args = new ArrayList<>();
 
                 for (String arg : args) {
@@ -900,7 +900,7 @@ public class FormulaParser {
                 node_map.put(s,n);
                 DAG.add(n);
             }
-            //System.out.println("------------------");
+            ////System.out.println("------------------");
             id++;
         }
         //setting the ccpar for each node

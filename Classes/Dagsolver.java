@@ -59,7 +59,7 @@ public class Dagsolver {
         //heuristic on ccpar
         if(n1.getccpar().size() > n2.getccpar().size()) {
             //n1 is the new representative
-            System.out.println(n2.getFind());
+            //System.out.println(n2.getFind());
             n1.setccpar(n2.getccpar());
             n2.resetccpar();
             n1.setForbidden_set(n2.getForbidden_set());
@@ -136,7 +136,7 @@ public class Dagsolver {
             
         }
 
-        //we check if some literal that is argumet of atom is in same congruence class with a cons
+        //we check if some literal that is argument of atom is in same congruence class with a cons
         //this save all the arguments of atom
         Set<Integer> is_atom = new HashSet<>();
         for (Node n : DAG) {
