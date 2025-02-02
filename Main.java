@@ -27,10 +27,14 @@ public class Main {
         Set<String> cubes = FormulaParser.FormulatoDNF(formula);
         
         for ( String s : cubes) {
-            Set<String> Formulas_without_store = FormulaParser.FormulaArraysToSetnoStore(s);
-            cubes.addAll(Formulas_without_store);
+            if (s.contains("store")) {
+                cubes.remove(s);
+                Set<String> Formulas_without_store = FormulaParser.FormulaArraysToSetnoStore(s);
+                cubes.addAll(Formulas_without_store);
+            }
         }
         System.out.println("--------------");
+        System.out.println("cubes are "+cubes);
         Boolean unsat_flag = true;
         for (String cube : cubes) {
             System.out.println("working on cube = " + cube);
