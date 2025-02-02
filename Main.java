@@ -8,7 +8,12 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-
+        //![[A]AND[B]]
+        //"![[[A]OR[C]]AND[B]]
+        //String formula = "[A]<->[B]";
+        //Set<String> clauses = FormulaParser.FormulatoDNF(formula);
+        //System.out.println(clauses);
+        //System.out.println("FINE TEST NNF\n----------------------------------------------");
         String formula = "";
         String filepath = "input.txt";
         try {
@@ -19,11 +24,17 @@ public class Main {
         System.out.println(formula);
         //here we should transform the formula with DNF into a set of conjuncts
         //then we do as follow for each conjunct (A AND B AND C AND D) OR (F AND G AND H) 
-        Set<String> Formulas_without_store = FormulaParser.FormulaArraysToSetnoStore(formula);
+        Set<String> cubes = FormulaParser.FormulatoDNF(formula);
+        
+        for ( String s : cubes) {
+            Set<String> Formulas_without_store = FormulaParser.FormulaArraysToSetnoStore(s);
+            cubes.addAll(Formulas_without_store);
+        }
         System.out.println("--------------");
         Boolean unsat_flag = true;
-        for (String formula_nostore : Formulas_without_store) {
-            Set<String> F = FormulaParser.FormulatoConjuncts(formula_nostore);
+        for (String cube : cubes) {
+            System.out.println("working on cube = " + cube);
+            Set<String> F = FormulaParser.FormulatoConjuncts(cube);
             System.out.println("--------------");
             System.out.println(F);  
             Set<String> Sf = FormulaParser.ConjunctstoTerms(F);
@@ -53,14 +64,14 @@ public class Main {
             } 
             else {
                 System.out.println(solver);
-                formula_nostore = formula_nostore.replace(" ", "");
-                System.out.println(formula_nostore + " is unsat, proceeding with next formula without store");
+                cube = cube.replace(" ", "");
+                System.out.println(cube + " is unsat, proceeding with next cube");
             }
         }
         if(unsat_flag) {
-            System.out.println("Whole formula is UNSAT");
+            System.out.println("--------------");
+            System.out.println("\n Whole formula is UNSAT since all cubes are unsat");
         }
         
-// A -> B
     }
 }
